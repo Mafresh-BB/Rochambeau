@@ -1,66 +1,78 @@
 console.log("Rochambeau script loaded.");
-// Additional game logic will be implemented here.
 
 const choices = ["rock", "paper", "scissors"];
 
 function getComputerChoice() {
-    const randomIndex = Math.floor(Math.random() * choices.length);
-    return choices[randomIndex];
+  const randomIndex = Math.floor(Math.random() * choices.length);
+  return choices[randomIndex];
 }
 
-//console.log(getComputerChoice());
-
-const getHumanChoice = () => {
-    let choice = prompt("Enter rock, paper, or scissors:");
-    choice = choice.trim().toLowerCase();
-    while (!choices.includes(choice)) {
-        choice = prompt("Enter valid choice:").toLowerCase()
-    }
-    return choice;
+function normalizeChoice(input) {
+  // Returns null if user cancelled, otherwise normalized string
+  if (input === null) return null;
+  return input.trim().toLowerCase();
 }
 
+function getHumanChoice() {
+  while (true) {
+    const raw = prompt("Enter rock, paper, or scissors (Cancel to quit):");
+    const choice = normalizeChoice(raw);
 
+    if (choice === null) return null; // user quit
 
-function playGame() {
-    let humanScore = 0;
-    let computerScore = 0;
+    if (choices.includes(choice)) return choice;
 
-    function playRound(humanChoice, computerChoice) {
-        
-        let result = "";
-        if (humanChoice === computerChoice) {
-            result = "Tie!";
-        } else if (humanChoice === choices[0] && computerChoice === choices[1]) {
-            computerScore += 1;
-            result = "You lose! Paper beats Rock";
-        } else if (humanChoice === choices[1] && computerChoice === choices[0]) {
-            humanScore += 1;
-            result = "You won! Paper beats Rock";
-        } else if (humanChoice === choices[0] && computerChoice === choices[2]) {
-            result = "You won! Rock beats Scissors";
-            humanScore += 1;
-        } else if (humanChoice === choices[2] && computerChoice === choices[0]) {
-            result = "You lose! Rock beats Scissors";
-            computerScore += 1;
-        } else if (humanChoice === choices[1] && computerChoice === choices[2]) {
-            result = "You lose! Scissors beats Paper";
-            computerScore += 1;
-        } else {
-            result = "You won! Scissors beats Paper";
-            humanScore += 1;
-        }
+    alert("Invalid choice. Enter: rock, paper, or scissors.");
+  }
+}
 
-        console.log(result);
-        return result;
+function playRound(humanChoice, computerChoice) {
+  if (humanChoice === computerChoice) {
+    return { outcome: "tie", message: `Tie! You both chose ${humanChoice}.` };
+  }
+
+  const humanWins =
+    (humanChoice === "rock" && computerChoice === "scissors") ||
+    (humanChoice === "paper" && computerChoice === "rock") ||
+    (humanChoice === "scissors" && computerChoice === "paper");
+
+  if (humanWins) {
+    return {
+      outcome: "win",
+      message: `You win! ${humanChoice} beats ${computerChoice}.`,
     };
+  }
 
-    for (let i = 0; i < 5; i++) {
-        playRound(getHumanChoice(), getComputerChoice());
+  return {
+    outcome: "lose",
+    message: `You lose! ${computerChoice} beats ${humanChoice}.`,
+  };
+}
+
+function playGame(rounds = 5) {
+  let humanScore = 0;
+  let computerScore = 0;
+
+  for (let i = 0; i < rounds; i++) {
+    const humanChoice = getHumanChoice();
+    if (humanChoice === null) {
+      console.log("Game ended by user.");
+      break;
     }
 
-    const message = `Final score: You: ${humanScore}, Computer: ${computerScore}`;
-    console.log(message);
-    return message;
-};
+    const computerChoice = getComputerChoice();
+    const { outcome, message } = playRound(humanChoice, computerChoice);
+
+    if (outcome === "win") humanScore++;
+    if (outcome === "lose") computerScore++;
+
+    console.log(`Round ${i + 1}: ${message}`);
+    console.log(`Score -> You: ${humanScore}, Computer: ${computerScore}`);
+  }
+
+  const finalMessage = `Final score: You: ${humanScore}, Computer: ${computerScore}`;
+  console.log(finalMessage);
+  return finalMessage;
+}
 
 playGame();
